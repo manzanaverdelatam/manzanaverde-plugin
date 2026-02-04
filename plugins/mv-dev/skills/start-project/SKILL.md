@@ -15,9 +15,11 @@ Antes de crear cualquier archivo, preguntar:
    - **Frontend** - Solo Next.js + Vercel (landing pages, dashboards, herramientas UI)
    - **Backend** - Solo Express + Railway (APIs, workers, servicios)
    - **Monorepo** - Frontend + Backend + Shared types (apps completas con logica de negocio)
-3. **Descripcion corta** - Una linea de que hace el proyecto
-4. **Necesita base de datos?** - Si/No (para backend y monorepo)
-5. **Necesita autenticacion?** - Si/No
+3. **Descripcion del proyecto** - Puede ser:
+   - **Una linea de descripcion** - Ej: "Landing page para la campana de verano 2025"
+   - **Ruta a un archivo PRD** - Ej: `prd.md`, `./docs/prd-campana.md`, `PRD.md`. Si el usuario proporciona una ruta a un archivo PRD, leerlo con la herramienta Read y extraer de el: la descripcion del proyecto, las features principales, los requisitos tecnicos, y cualquier detalle relevante para la arquitectura. Usar esta informacion para tomar decisiones informadas en los pasos siguientes (tipo de proyecto, estructura de carpetas, paginas a crear, endpoints necesarios, etc.) sin volver a preguntar lo que ya esta definido en el PRD.
+4. **Necesita base de datos?** - Si/No (para backend y monorepo). Omitir si el PRD ya lo especifica.
+5. **Necesita autenticacion?** - Si/No. Omitir si el PRD ya lo especifica.
 
 ## Paso 2: Crear proyecto segun tipo
 
@@ -219,7 +221,7 @@ Crear un CLAUDE.md especifico del proyecto:
 - `src/types/` - Tipos TypeScript
 
 ## Reglas
-- Seguir el design system de MV (ver /mv-design-system)
+- Seguir el design system de MV (ver /mv-dev:mv-design-system)
 - Server Components por defecto, 'use client' solo cuando necesario
 - Tests para todo componente y hook
 - No hardcodear colores, usar tokens
@@ -337,4 +339,4 @@ Informar al usuario:
 1. Configurar variables de entorno en `.env.local` copiando de `.env.example`
 2. Crear repositorio en GitHub bajo la organizacion de MV
 3. Conectar a Vercel/Railway segun tipo de proyecto
-4. Empezar a desarrollar con `/new-feature` o `/new-page`
+4. Empezar a desarrollar con `/mv-dev:new-feature` o `/mv-dev:new-page`
