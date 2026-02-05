@@ -39,9 +39,11 @@ source ~/.zshrc
 
 ---
 
-## 2. Notion (Documentacion de MV)
+## 2. Notion (Documentacion de proyectos)
 
-Notion permite a Claude leer la documentacion de la empresa directamente. Necesitas un token de integracion de Notion.
+Notion se usa como **hub central de documentacion**. Cada proyecto de MV tiene su propia pagina en Notion, identificada por el link de GitHub. Esto permite que multiples personas trabajen en el mismo proyecto y cualquiera pueda retomarlo leyendo la doc.
+
+Claude necesita permisos de **lectura y escritura** para crear y actualizar la documentacion automaticamente.
 
 ### Paso a paso
 
@@ -50,14 +52,14 @@ Notion permite a Claude leer la documentacion de la empresa directamente. Necesi
 3. Configurar:
    - **Name:** `MV Claude Code`
    - **Associated workspace:** Seleccionar el workspace de Manzana Verde
-   - **Capabilities:** Solo marcar **Read content** y **Read comments** (NO marcar write)
+   - **Capabilities:** Marcar **Read content**, **Update content**, **Insert content** y **Read comments**
 4. Click en **"Submit"**
 5. Copiar el **"Internal Integration Secret"** (formato: `ntn_...`)
-6. **IMPORTANTE:** Compartir las paginas/bases de datos con la integracion:
-   - Abrir cada base de datos en Notion que quieras conectar
+6. **IMPORTANTE:** Compartir la pagina raiz de proyectos con la integracion:
+   - Crear (o abrir) una pagina en Notion llamada **"MV Projects"** (aqui se crearan las paginas de cada proyecto)
    - Click en **"..."** (tres puntos) → **"Connections"** → **"Connect to"**
    - Buscar y seleccionar **"MV Claude Code"**
-   - Repetir para cada base de datos (APIs, Design, ADRs, Specs, Integraciones)
+   - Esto da acceso a la pagina y todas sus sub-paginas
 7. Agregar a tu shell profile:
 
 ```bash
@@ -73,9 +75,16 @@ source ~/.zshrc
 
 **Verificar:** `echo $NOTION_TOKEN` debe mostrar tu token.
 
+### Como funciona la documentacion
+
+- Al crear un proyecto con `/mv-dev:start-project`, Claude crea automaticamente una pagina en Notion con: Overview, Business Logic, API Docs, Components, Architecture y Changelog
+- El **link de GitHub** del repo es el identificador unico de cada proyecto
+- Si otra persona abre el mismo proyecto, Claude lee la documentacion existente en Notion y continua desde ahi
+- Puedes pedir a Claude que actualice la documentacion en cualquier momento
+
 ### Nota sobre permisos
 
-La integracion solo puede acceder a las paginas que le compartas explicitamente. Si Claude dice que no encuentra algo en Notion, probablemente falta compartir esa pagina con la integracion.
+La integracion solo puede acceder a las paginas que le compartas explicitamente. Comparte la pagina raiz **"MV Projects"** y todas las sub-paginas heredaran el acceso automaticamente.
 
 ---
 
@@ -184,17 +193,20 @@ Estos MCP servers funcionan sin tokens adicionales:
 
 ## Servidores custom de MV (configuracion adicional)
 
-### mv-db-query (MySQL staging)
+### mv-db-query (MySQL / PostgreSQL)
 
-Si necesitas acceso directo a la base de datos MySQL de staging:
+Si necesitas acceso directo a una base de datos, agrega estas variables a tu `.env` o `~/.zshrc`:
 
 ```bash
-# Pedir estas credenciales al Tech Lead
-export MV_STAGING_DB_HOST="..."
-export MV_STAGING_DB_PORT="3306"
-export MV_STAGING_DB_USER="..."
-export MV_STAGING_DB_PASSWORD="..."
-export MV_STAGING_DB_NAME="..."
+# Tipo de base de datos: mysql | postgres (default: mysql)
+export DB_ACCESS_TYPE="mysql"
+
+# Credenciales de acceso (pedir al Tech Lead)
+export DB_ACCESS_HOST="..."
+export DB_ACCESS_PORT="3306"       # 3306 para MySQL, 5432 para PostgreSQL
+export DB_ACCESS_USER="..."
+export DB_ACCESS_PASSWORD="..."
+export DB_ACCESS_NAME="..."
 ```
 
 ---

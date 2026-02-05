@@ -186,14 +186,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ```bash
 # API
 NEXT_PUBLIC_API_URL=
-MV_STAGING_API_URL=
 
-# Staging DB (solo si se necesita acceso directo)
-MV_STAGING_DB_HOST=
-MV_STAGING_DB_PORT=3306
-MV_STAGING_DB_USER=
-MV_STAGING_DB_PASSWORD=
-MV_STAGING_DB_NAME=
+# DB (solo si se necesita acceso directo)
+DB_ACCESS_TYPE=            # mysql | postgres
+DB_ACCESS_HOST=
+DB_ACCESS_PORT=3306        # 3306 MySQL, 5432 PostgreSQL
+DB_ACCESS_USER=
+DB_ACCESS_PASSWORD=
+DB_ACCESS_NAME=
 ```
 
 ### CLAUDE.md del proyecto
@@ -332,11 +332,31 @@ MV standard project with Next.js/Express, TypeScript strict,
 Tailwind CSS v4 with MV design tokens, and testing setup."
 ```
 
-## Paso 5: Siguiente pasos
+## Paso 5: Documentar proyecto en Notion
+
+Si `NOTION_TOKEN` esta configurado, crear la documentacion del proyecto en Notion usando el doc-agent:
+
+1. **Preguntar al usuario el link del repositorio en GitHub** (ej: `https://github.com/manzanaverde/mv-landing-campana`). Este link es el identificador unico del proyecto en Notion.
+2. **Buscar en Notion** si ya existe una pagina con ese link de GitHub
+3. Si **NO existe**: crear la pagina del proyecto con la estructura definida en el doc-agent:
+   - **Overview**: nombre, descripcion, stack, link GitHub, URLs
+   - **Business Logic**: si el usuario proporciono un PRD, extraer toda la logica de negocio (reglas, flujos, entidades, validaciones, edge cases). Si no hay PRD, dejar la seccion con plantilla para llenar despues.
+   - **API Documentation**: pre-llenar si el proyecto es backend o monorepo
+   - **Components**: pre-llenar si el proyecto es frontend o monorepo
+   - **Architecture**: estructura de carpetas, patron de datos, dependencias, env vars
+   - **Changelog**: primera entrada con la creacion del proyecto
+4. Si **YA existe**: leer la documentacion existente e informar al usuario que el proyecto ya esta documentado
+
+Si Notion no esta configurado, crear los archivos de documentacion localmente:
+- `docs/BUSINESS_LOGIC.md`
+- `docs/API.md`
+- `docs/ARCHITECTURE.md`
+
+## Paso 6: Siguientes pasos
 
 Informar al usuario:
 
 1. Configurar variables de entorno en `.env.local` copiando de `.env.example`
-2. Crear repositorio en GitHub bajo la organizacion de MV
+2. Si no lo hizo aun, crear repositorio en GitHub bajo la organizacion de MV
 3. Conectar a Vercel/Railway segun tipo de proyecto
 4. Empezar a desarrollar con `/mv-dev:new-feature` o `/mv-dev:new-page`

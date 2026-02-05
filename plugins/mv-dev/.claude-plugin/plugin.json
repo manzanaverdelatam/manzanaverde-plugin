@@ -65,7 +65,7 @@
       "env": {
         "NOTION_TOKEN": "${NOTION_TOKEN}"
       },
-      "description": "Acceso oficial a Notion para leer y buscar documentacion de MV (requiere NOTION_TOKEN)"
+      "description": "Acceso oficial a Notion para crear, leer y actualizar documentacion de proyectos de MV (requiere NOTION_TOKEN)"
     },
     "supabase-mcp": {
       "command": "npx",

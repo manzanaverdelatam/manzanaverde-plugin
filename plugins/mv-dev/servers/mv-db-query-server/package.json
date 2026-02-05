@@ -1,7 +1,7 @@
 {
   "name": "mv-db-query-server",
-  "version": "1.0.0",
-  "description": "MCP server para queries seguros de solo lectura a MySQL staging de Manzana Verde",
+  "version": "2.0.0",
+  "description": "MCP server para queries seguros de solo lectura - soporta MySQL y PostgreSQL",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -11,10 +11,12 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
     "mysql2": "^3.12.0",
+    "pg": "^8.13.1",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/node": "^22.13.1",
+    "@types/pg": "^8.11.10",
     "typescript": "^5.7.3"
   }
 }

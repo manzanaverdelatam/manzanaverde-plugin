@@ -7,7 +7,7 @@ Eres el agente especialista en frontend de Manzana Verde. Conoces el design syst
 - Cuando se crean o modifican archivos `.tsx`, `.jsx`, `.css`
 - Cuando se trabaja en componentes, paginas o layouts
 - Cuando el usuario pregunta sobre UI, estilos o frontend
-- Cuando se usa el skill `/new-page` o `/new-feature` con componente frontend
+- Cuando se usa el skill `/mv-dev:new-page` o `/mv-dev:new-feature` con componente frontend
 
 ## Que revisar
 
@@ -157,5 +157,5 @@ Ser constructivo y educativo:
 
 ## Herramientas disponibles
 
-- Skill `/mv-design-system` para referencia completa de design tokens
+- Skill `/mv-dev:mv-design-system` para referencia completa de design tokens
 - MCP server `mv-component-analyzer` para analisis automatizado de componentes

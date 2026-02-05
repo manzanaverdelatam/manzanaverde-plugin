@@ -1,10 +1,10 @@
 ---
-description: Como hacer queries seguros de solo lectura a la base de datos staging de Manzana Verde
+description: Como hacer queries seguros de solo lectura a la base de datos de Manzana Verde (MySQL o PostgreSQL)
 ---
 
-# Queries Seguros a Base de Datos Staging
+# Queries Seguros a Base de Datos
 
-Guia para consultar la base de datos MySQL de staging de forma segura usando el MCP server `mv-db-query`.
+Guia para consultar la base de datos de forma segura usando el MCP server `mv-db-query`. Soporta MySQL y PostgreSQL (configurado via `DB_ACCESS_TYPE`).
 
 ## Reglas de Seguridad CRITICAS
 
@@ -18,12 +18,14 @@ Guia para consultar la base de datos MySQL de staging de forma segura usando el 
 
 El plugin incluye un MCP server que expone 4 herramientas:
 
-### 1. `query_staging_db` - Ejecutar query
+### 1. `query_db` - Ejecutar query
 
 ```
-Herramienta: query_staging_db
+Herramienta: query_db
 Input: { sql: "SELECT id, name, price_cents FROM meals WHERE active = ? LIMIT 20", params: [true] }
 ```
+
+> Nota: Para PostgreSQL, los placeholders `?` se convierten automaticamente a `$1`, `$2`, etc.
 
 ### 2. `list_tables` - Ver tablas disponibles
 

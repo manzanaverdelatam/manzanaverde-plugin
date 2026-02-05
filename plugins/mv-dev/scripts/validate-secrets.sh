@@ -62,7 +62,7 @@ check_pattern "-----BEGIN (RSA |EC |DSA )?PRIVATE KEY-----" "Private key"
 check_pattern "-----BEGIN CERTIFICATE-----" "Certificate"
 
 # Variables de entorno con valores
-check_pattern "(NOTION_TOKEN|CONTEXT7_API_KEY|SUPABASE_ACCESS_TOKEN|VERCEL_TOKEN|RAILWAY_TOKEN|MV_STAGING_DB_PASSWORD)\s*=\s*['\"]?[a-zA-Z0-9]{8,}" "Variable de entorno sensible con valor"
+check_pattern "(NOTION_TOKEN|CONTEXT7_API_KEY|SUPABASE_ACCESS_TOKEN|VERCEL_TOKEN|RAILWAY_TOKEN|DB_ACCESS_PASSWORD)\s*=\s*['\"]?[a-zA-Z0-9]{8,}" "Variable de entorno sensible con valor"
 
 if [ $FOUND_SECRETS -eq 1 ]; then
   echo "========================================="

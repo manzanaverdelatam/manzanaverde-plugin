@@ -50,11 +50,11 @@ Ejecutados automaticamente al escribir/editar archivos:
 - **context7** - Documentacion actualizada de librerias (requiere `CONTEXT7_API_KEY`)
 - **memory-keeper** - Memoria persistente entre sesiones de Claude Code
 - **playwright** - Automatizacion de browser para testing E2E
-- **notion** - Acceso oficial a documentacion en Notion (requiere `NOTION_TOKEN`)
+- **notion** - Crea, lee y actualiza documentacion de proyectos en Notion (requiere `NOTION_TOKEN`)
 - **supabase-mcp** - Gestion de base de datos Supabase en modo read-only (requiere `SUPABASE_ACCESS_TOKEN`)
 
 **Custom de MV:**
-- **mv-db-query** - Queries MySQL staging (solo lectura, LIMIT obligatorio)
+- **mv-db-query** - Queries SQL de solo lectura, MySQL/PostgreSQL (LIMIT obligatorio)
 - **mv-component-analyzer** - Analisis de componentes React/Next.js
 
 ## Configuracion

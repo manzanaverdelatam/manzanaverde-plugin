@@ -20,12 +20,21 @@ claude plugin add https://github.com/manzanaverde/manzanaverde-plugin
 
 Algunos MCP servers requieren tokens. Sigue la guia completa en [SETUP.md](plugins/mv-dev/SETUP.md).
 
-Resumen rapido: agregar a tu `~/.zshrc`:
+Resumen rapido: agregar a tu `~/.zshrc` o al `.env` del proyecto:
 
 ```bash
+# MCP Servers
 export CONTEXT7_API_KEY="ctx7sk-..."    # context7.com/dashboard
 export NOTION_TOKEN="ntn_..."           # notion.so/my-integrations
 export SUPABASE_ACCESS_TOKEN="sbp_..."  # supabase.com/dashboard
+
+# Base de datos (pedir al Tech Lead)
+export DB_ACCESS_TYPE="mysql"      # mysql | postgres
+export DB_ACCESS_HOST="..."
+export DB_ACCESS_PORT="3306"       # 3306 para MySQL, 5432 para PostgreSQL
+export DB_ACCESS_USER="..."
+export DB_ACCESS_PASSWORD="..."
+export DB_ACCESS_NAME="..."
 ```
 
 Luego `source ~/.zshrc` y reiniciar Claude Code.
@@ -97,14 +106,14 @@ Se ejecutan automaticamente al escribir o editar archivos:
 | Context7 | `CONTEXT7_API_KEY` | Documentacion actualizada de librerias |
 | Memory Keeper | No | Memoria persistente entre sesiones |
 | Playwright | No | Automatizacion de browser para E2E |
-| Notion | `NOTION_TOKEN` | Documentacion de MV en Notion |
+| Notion | `NOTION_TOKEN` | Crea, lee y actualiza documentacion de proyectos en Notion |
 | Supabase | `SUPABASE_ACCESS_TOKEN` | Base de datos Supabase (solo lectura) |
 
 **Custom de MV:**
 
 | Server | Descripcion |
 |--------|-------------|
-| mv-db-query | Queries MySQL staging (solo lectura, LIMIT obligatorio) |
+| mv-db-query | Queries SQL de solo lectura (MySQL/PostgreSQL, LIMIT obligatorio) |
 | mv-component-analyzer | Analisis de componentes React/Next.js |
 
 ## Estructura del proyecto

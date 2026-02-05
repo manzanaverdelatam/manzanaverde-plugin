@@ -127,5 +127,5 @@ it('muestra placeholder cuando la imagen falla', () => {
 
 ## Herramientas disponibles
 
-- Skill `/mv-testing` para referencia completa de testing en MV
+- Skill `/mv-dev:mv-testing` para referencia completa de testing en MV
 - MCP server `mv-component-analyzer` tool `find_missing_tests` para detectar archivos sin tests

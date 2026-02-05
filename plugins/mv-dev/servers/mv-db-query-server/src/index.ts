@@ -1,49 +1,186 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import mysql from "mysql2/promise";
 
-// Configuration from environment variables
+// ─── Types ───────────────────────────────────────────────────────────
+
+type DbType = "mysql" | "postgres";
+
+interface QueryResult {
+  rows: Record<string, unknown>[];
+}
+
+interface DbDriver {
+  connect(): Promise<void>;
+  execute(sql: string, params?: (string | number)[]): Promise<QueryResult>;
+  listTables(): Promise<string[]>;
+  describeTable(table: string): Promise<Record<string, unknown>[]>;
+  close(): Promise<void>;
+}
+
+// ─── Configuration ───────────────────────────────────────────────────
+
+const DB_TYPE = (process.env.DB_ACCESS_TYPE?.toLowerCase() ?? "mysql") as DbType;
 const DB_CONFIG = {
-  host: process.env.MV_STAGING_DB_HOST,
-  port: parseInt(process.env.MV_STAGING_DB_PORT ?? "3306", 10),
-  user: process.env.MV_STAGING_DB_USER,
-  password: process.env.MV_STAGING_DB_PASSWORD,
-  database: process.env.MV_STAGING_DB_NAME,
-  connectTimeout: 10000,
-  waitForConnections: true,
-  connectionLimit: 5,
+  host: process.env.DB_ACCESS_HOST,
+  port: parseInt(process.env.DB_ACCESS_PORT ?? (DB_TYPE === "postgres" ? "5432" : "3306"), 10),
+  user: process.env.DB_ACCESS_USER,
+  password: process.env.DB_ACCESS_PASSWORD,
+  database: process.env.DB_ACCESS_NAME,
 };
 
-// Blocked tables containing sensitive data
 const BLOCKED_TABLES = new Set(
-  (process.env.MV_DB_BLOCKED_TABLES ?? "user_credentials,payment_methods,stripe_tokens,admin_sessions")
+  (process.env.DB_BLOCKED_TABLES ?? "user_credentials,payment_methods,stripe_tokens,admin_sessions")
     .split(",")
-    .map((t) => t.trim().toLowerCase())
+    .map((t: string) => t.trim().toLowerCase())
 );
 
 const MAX_LIMIT = 100;
 
-// Lazy connection pool
-let pool: mysql.Pool | null = null;
+// ─── MySQL Driver ────────────────────────────────────────────────────
 
-function getPool(): mysql.Pool {
-  if (!pool) {
+function createMySQLDriver(): DbDriver {
+  let pool: import("mysql2/promise").Pool | null = null;
+
+  return {
+    async connect() {
+      const mysql = await import("mysql2/promise");
+      pool = mysql.createPool({
+        host: DB_CONFIG.host,
+        port: DB_CONFIG.port,
+        user: DB_CONFIG.user,
+        password: DB_CONFIG.password,
+        database: DB_CONFIG.database,
+        connectTimeout: 10000,
+        waitForConnections: true,
+        connectionLimit: 5,
+      });
+    },
+
+    async execute(sql: string, params?: (string | number)[]): Promise<QueryResult> {
+      if (!pool) throw new Error("MySQL no conectado");
+      const [rows] = await pool.execute(sql, params ?? []);
+      return { rows: rows as Record<string, unknown>[] };
+    },
+
+    async listTables(): Promise<string[]> {
+      if (!pool) throw new Error("MySQL no conectado");
+      const [rows] = await pool.execute("SHOW TABLES");
+      return (rows as Record<string, string>[]).map((row) => Object.values(row)[0]);
+    },
+
+    async describeTable(table: string): Promise<Record<string, unknown>[]> {
+      if (!pool) throw new Error("MySQL no conectado");
+      const [rows] = await pool.execute(`DESCRIBE \`${table}\``);
+      return rows as Record<string, unknown>[];
+    },
+
+    async close() {
+      if (pool) {
+        await pool.end();
+        pool = null;
+      }
+    },
+  };
+}
+
+// ─── PostgreSQL Driver ───────────────────────────────────────────────
+
+function createPostgresDriver(): DbDriver {
+  let pool: import("pg").Pool | null = null;
+
+  return {
+    async connect() {
+      const { Pool } = await import("pg");
+      pool = new Pool({
+        host: DB_CONFIG.host,
+        port: DB_CONFIG.port,
+        user: DB_CONFIG.user,
+        password: DB_CONFIG.password,
+        database: DB_CONFIG.database,
+        max: 5,
+        connectionTimeoutMillis: 10000,
+      });
+    },
+
+    async execute(sql: string, params?: (string | number)[]): Promise<QueryResult> {
+      if (!pool) throw new Error("PostgreSQL no conectado");
+      // Convert ? placeholders to $1, $2, ... for pg
+      let paramIndex = 0;
+      const pgSql = sql.replace(/\?/g, () => `$${++paramIndex}`);
+      const result = await pool.query(pgSql, params ?? []);
+      return { rows: result.rows };
+    },
+
+    async listTables(): Promise<string[]> {
+      if (!pool) throw new Error("PostgreSQL no conectado");
+      const result = await pool.query(
+        "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename"
+      );
+      return result.rows.map((row: Record<string, string>) => row.tablename);
+    },
+
+    async describeTable(table: string): Promise<Record<string, unknown>[]> {
+      if (!pool) throw new Error("PostgreSQL no conectado");
+      const result = await pool.query(
+        `SELECT column_name AS "Field", data_type AS "Type", is_nullable AS "Null",
+                CASE WHEN column_default IS NOT NULL THEN column_default ELSE '' END AS "Default"
+         FROM information_schema.columns
+         WHERE table_schema = 'public' AND table_name = $1
+         ORDER BY ordinal_position`,
+        [table]
+      );
+      return result.rows;
+    },
+
+    async close() {
+      if (pool) {
+        await pool.end();
+        pool = null;
+      }
+    },
+  };
+}
+
+// ─── Driver Factory ──────────────────────────────────────────────────
+
+function createDriver(type: DbType): DbDriver {
+  switch (type) {
+    case "mysql":
+      return createMySQLDriver();
+    case "postgres":
+      return createPostgresDriver();
+    default:
+      throw new Error(
+        `Tipo de base de datos '${type}' no soportado. Usa: mysql, postgres`
+      );
+  }
+}
+
+// ─── Lazy Driver ─────────────────────────────────────────────────────
+
+let driver: DbDriver | null = null;
+
+async function getDriver(): Promise<DbDriver> {
+  if (!driver) {
     if (!DB_CONFIG.host || !DB_CONFIG.user || !DB_CONFIG.password || !DB_CONFIG.database) {
       throw new Error(
         "Base de datos no configurada. Configura las variables de entorno:\n" +
-        "  MV_STAGING_DB_HOST\n" +
-        "  MV_STAGING_DB_USER\n" +
-        "  MV_STAGING_DB_PASSWORD\n" +
-        "  MV_STAGING_DB_NAME"
+        "  DB_ACCESS_TYPE     (mysql | postgres, default: mysql)\n" +
+        "  DB_ACCESS_HOST\n" +
+        "  DB_ACCESS_USER\n" +
+        "  DB_ACCESS_PASSWORD\n" +
+        "  DB_ACCESS_NAME"
       );
     }
-    pool = mysql.createPool(DB_CONFIG);
+    driver = createDriver(DB_TYPE);
+    await driver.connect();
   }
-  return pool;
+  return driver;
 }
 
-// SQL validation
+// ─── SQL Validation ──────────────────────────────────────────────────
+
 function validateSQL(sql: string): { valid: boolean; error?: string } {
   const trimmed = sql.trim();
   const upper = trimmed.toUpperCase();
@@ -53,15 +190,13 @@ function validateSQL(sql: string): { valid: boolean; error?: string } {
     return { valid: false, error: "Solo se permiten queries SELECT. Operaciones de escritura estan prohibidas." };
   }
 
-  // Block destructive keywords anywhere in the query
+  // Block destructive keywords
   const destructive = ["DELETE", "UPDATE", "INSERT", "DROP", "ALTER", "TRUNCATE", "CREATE", "REPLACE", "GRANT", "REVOKE"];
   for (const keyword of destructive) {
-    // Use word boundary matching to avoid false positives
     const regex = new RegExp(`\\b${keyword}\\b`, "i");
     if (regex.test(trimmed) && keyword !== "CREATE") {
       return { valid: false, error: `Operacion '${keyword}' no permitida. Solo SELECT esta permitido.` };
     }
-    // For CREATE, only block if it's not inside a string or subquery context
     if (keyword === "CREATE" && regex.test(trimmed) && !upper.startsWith("SELECT")) {
       return { valid: false, error: `Operacion '${keyword}' no permitida.` };
     }
@@ -92,7 +227,8 @@ function validateSQL(sql: string): { valid: boolean; error?: string } {
   return { valid: true };
 }
 
-// Format results as readable table
+// ─── Format Results ──────────────────────────────────────────────────
+
 function formatResults(rows: Record<string, unknown>[]): string {
   if (rows.length === 0) return "No se encontraron resultados.";
 
@@ -112,32 +248,38 @@ function formatResults(rows: Record<string, unknown>[]): string {
   return [header, separator, ...dataRows].join("\n") + `\n\n(${rows.length} fila${rows.length === 1 ? "" : "s"})`;
 }
 
-// Create MCP server
+// ─── Escape identifier per DB type ───────────────────────────────────
+
+function escapeIdentifier(name: string): string {
+  if (DB_TYPE === "postgres") return `"${name}"`;
+  return `\`${name}\``;
+}
+
+// ─── MCP Server ──────────────────────────────────────────────────────
+
 const server = new McpServer({
   name: "mv-db-query",
-  version: "1.0.0",
+  version: "2.0.0",
 });
 
-// Tool: query_staging_db
+// Tool: query_db
 server.tool(
-  "query_staging_db",
-  "Ejecutar un query SELECT de solo lectura contra la base de datos staging de MV. Debe incluir LIMIT (max 100). Solo SELECT permitido.",
+  "query_db",
+  `Ejecutar un query SELECT de solo lectura contra la base de datos (${DB_TYPE}). Debe incluir LIMIT (max 100). Solo SELECT permitido.`,
   {
     sql: z.string().describe("Query SQL SELECT (debe incluir LIMIT, maximo 100 filas)"),
     params: z.array(z.union([z.string(), z.number()])).optional().describe("Valores parametrizados para placeholders ? en el SQL"),
   },
-  async ({ sql, params }) => {
+  async ({ sql, params }: { sql: string; params?: (string | number)[] }) => {
     const validation = validateSQL(sql);
     if (!validation.valid) {
       return { content: [{ type: "text" as const, text: `Error: ${validation.error}` }] };
     }
 
     try {
-      const db = getPool();
-      const [rows] = await db.execute(sql, params ?? []);
-      const resultRows = rows as Record<string, unknown>[];
-      const formatted = formatResults(resultRows);
-
+      const db = await getDriver();
+      const result = await db.execute(sql, params);
+      const formatted = formatResults(result.rows);
       return { content: [{ type: "text" as const, text: formatted }] };
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Error desconocido";
@@ -149,18 +291,17 @@ server.tool(
 // Tool: list_tables
 server.tool(
   "list_tables",
-  "Listar todas las tablas disponibles en la base de datos staging de MV",
+  "Listar todas las tablas disponibles en la base de datos",
   {},
   async () => {
     try {
-      const db = getPool();
-      const [rows] = await db.execute("SHOW TABLES");
-      const tables = (rows as Record<string, string>[]).map((row) => Object.values(row)[0]);
+      const db = await getDriver();
+      const tables = await db.listTables();
 
       const visibleTables = tables.filter((t) => !BLOCKED_TABLES.has(t.toLowerCase()));
       const blockedCount = tables.length - visibleTables.length;
 
-      let result = "Tablas disponibles:\n\n";
+      let result = `Tablas disponibles (${DB_TYPE}):\n\n`;
       result += visibleTables.map((t) => `  - ${t}`).join("\n");
       if (blockedCount > 0) {
         result += `\n\n(${blockedCount} tabla${blockedCount === 1 ? "" : "s"} bloqueada${blockedCount === 1 ? "" : "s"} por contener datos sensibles)`;
@@ -177,12 +318,11 @@ server.tool(
 // Tool: describe_table
 server.tool(
   "describe_table",
-  "Ver la estructura (columnas, tipos, keys) de una tabla en la base de datos staging de MV",
+  "Ver la estructura (columnas, tipos, keys) de una tabla en la base de datos",
   {
     table: z.string().describe("Nombre de la tabla a describir"),
   },
-  async ({ table }) => {
-    // Validate table name (alphanumeric and underscores only)
+  async ({ table }: { table: string }) => {
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(table)) {
       return { content: [{ type: "text" as const, text: "Error: Nombre de tabla invalido." }] };
     }
@@ -192,12 +332,11 @@ server.tool(
     }
 
     try {
-      const db = getPool();
-      const [rows] = await db.execute(`DESCRIBE \`${table}\``);
-      const columns = rows as Record<string, unknown>[];
+      const db = await getDriver();
+      const columns = await db.describeTable(table);
       const formatted = formatResults(columns);
 
-      return { content: [{ type: "text" as const, text: `Estructura de tabla '${table}':\n\n${formatted}` }] };
+      return { content: [{ type: "text" as const, text: `Estructura de tabla '${table}' (${DB_TYPE}):\n\n${formatted}` }] };
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Error desconocido";
       return { content: [{ type: "text" as const, text: `Error: ${msg}` }] };
@@ -208,12 +347,12 @@ server.tool(
 // Tool: get_sample_data
 server.tool(
   "get_sample_data",
-  "Obtener datos de ejemplo de una tabla en staging (maximo 10 filas)",
+  "Obtener datos de ejemplo de una tabla (maximo 10 filas)",
   {
     table: z.string().describe("Nombre de la tabla"),
     limit: z.number().max(10).default(5).describe("Numero de filas (maximo 10)"),
   },
-  async ({ table, limit }) => {
+  async ({ table, limit }: { table: string; limit: number }) => {
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(table)) {
       return { content: [{ type: "text" as const, text: "Error: Nombre de tabla invalido." }] };
     }
@@ -225,12 +364,12 @@ server.tool(
     const safeLimit = Math.min(Math.max(1, limit), 10);
 
     try {
-      const db = getPool();
-      const [rows] = await db.execute(`SELECT * FROM \`${table}\` LIMIT ?`, [safeLimit]);
-      const resultRows = rows as Record<string, unknown>[];
-      const formatted = formatResults(resultRows);
+      const db = await getDriver();
+      const escaped = escapeIdentifier(table);
+      const result = await db.execute(`SELECT * FROM ${escaped} LIMIT ?`, [safeLimit]);
+      const formatted = formatResults(result.rows);
 
-      return { content: [{ type: "text" as const, text: `Datos de ejemplo de '${table}':\n\n${formatted}` }] };
+      return { content: [{ type: "text" as const, text: `Datos de ejemplo de '${table}' (${DB_TYPE}):\n\n${formatted}` }] };
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Error desconocido";
       return { content: [{ type: "text" as const, text: `Error: ${msg}` }] };
@@ -238,11 +377,12 @@ server.tool(
   }
 );
 
-// Start server
+// ─── Start Server ────────────────────────────────────────────────────
+
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("mv-db-query MCP server running on stdio");
+  console.error(`mv-db-query MCP server running on stdio (driver: ${DB_TYPE})`);
 }
 
 main().catch((error) => {

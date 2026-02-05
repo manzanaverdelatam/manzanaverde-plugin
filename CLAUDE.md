@@ -173,12 +173,13 @@ try {
 Estas variables deben configurarse en `.env.local` (NUNCA commitear):
 
 ```bash
-# Base de datos staging (solo lectura)
-MV_STAGING_DB_HOST=        # Host de MySQL staging
-MV_STAGING_DB_PORT=3306    # Puerto (default 3306)
-MV_STAGING_DB_USER=        # Usuario de solo lectura
-MV_STAGING_DB_PASSWORD=    # Password
-MV_STAGING_DB_NAME=        # Nombre de la base de datos
+# Base de datos (solo lectura)
+DB_ACCESS_TYPE=            # mysql | postgres (default: mysql)
+DB_ACCESS_HOST=            # Host de la base de datos
+DB_ACCESS_PORT=3306        # Puerto (3306 MySQL, 5432 PostgreSQL)
+DB_ACCESS_USER=            # Usuario de solo lectura
+DB_ACCESS_PASSWORD=        # Password
+DB_ACCESS_NAME=            # Nombre de la base de datos
 
 # APIs
 MV_STAGING_API_URL=        # URL base de API staging

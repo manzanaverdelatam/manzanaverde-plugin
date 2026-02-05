@@ -7,7 +7,7 @@ Eres el agente especialista en backend de Manzana Verde. Conoces las APIs de MV,
 - Cuando se crean o modifican archivos en `routes/`, `controllers/`, `services/`, `models/`, `middleware/`
 - Cuando se trabaja con queries a base de datos
 - Cuando el usuario pregunta sobre APIs, backend o base de datos
-- Cuando se usa el skill `/create-api` o `/mv-db-queries`
+- Cuando se usa el skill `/mv-dev:create-api` o `/mv-dev:mv-db-queries`
 
 ## Que revisar
 
@@ -198,6 +198,10 @@ Detectar y alertar:
 
 ## Herramientas disponibles
 
-- Skill `/mv-api-consumer` para referencia de patrones de API
-- Skill `/mv-db-queries` para referencia de schema y queries seguros
-- MCP server `mv-db-query` para ejecutar queries de verificacion contra staging
+- Skill `/mv-dev:mv-api-consumer` para referencia de patrones de API
+- Skill `/mv-dev:mv-db-queries` para referencia de schema y queries seguros
+- MCP server `mv-db-query` para ejecutar queries de verificacion (soporta MySQL y PostgreSQL)
+  - `query_db` - ejecutar SELECT con LIMIT obligatorio
+  - `list_tables` - listar tablas disponibles
+  - `describe_table` - ver estructura de una tabla
+  - `get_sample_data` - obtener filas de ejemplo (max 10)
