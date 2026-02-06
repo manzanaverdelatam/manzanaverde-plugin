@@ -20,7 +20,9 @@ claude plugin add https://github.com/manzanaverde/manzanaverde-plugin
 
 Algunos MCP servers requieren tokens. Sigue la guia completa en [SETUP.md](plugins/mv-dev/SETUP.md).
 
-Resumen rapido: agregar a tu `~/.zshrc` o al `.env` del proyecto:
+Resumen rapido:
+
+**Mac / Linux** - agregar a tu `~/.zshrc` o `~/.bashrc`:
 
 ```bash
 # MCP Servers
@@ -38,6 +40,27 @@ export DB_ACCESS_NAME="..."
 ```
 
 Luego `source ~/.zshrc` y reiniciar Claude Code.
+
+**Windows (PowerShell)** - agregar a tu perfil de PowerShell (`$PROFILE`):
+
+```powershell
+# MCP Servers
+$env:CONTEXT7_API_KEY = "ctx7sk-..."
+$env:NOTION_TOKEN = "ntn_..."
+$env:SUPABASE_ACCESS_TOKEN = "sbp_..."
+
+# Base de datos (pedir al Tech Lead)
+$env:DB_ACCESS_TYPE = "mysql"
+$env:DB_ACCESS_HOST = "..."
+$env:DB_ACCESS_PORT = "3306"
+$env:DB_ACCESS_USER = "..."
+$env:DB_ACCESS_PASSWORD = "..."
+$env:DB_ACCESS_NAME = "..."
+```
+
+Para que persistan, agregar al archivo de perfil: `notepad $PROFILE` (crear si no existe), pegar las lineas, guardar y reiniciar la terminal.
+
+**Alternativa Windows:** Usar variables de entorno del sistema: `Configuracion` > `Sistema` > `Acerca de` > `Configuracion avanzada del sistema` > `Variables de entorno` > `Nueva` (en Variables de usuario).
 
 ## Uso rapido
 

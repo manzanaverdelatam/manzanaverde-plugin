@@ -10,6 +10,32 @@ Esta guia explica paso a paso como configurar los tokens necesarios para que tod
 - **Claude Code** instalado y configurado
 - Acceso a las cuentas de los servicios (te los da el Tech Lead)
 
+## Nota sobre sistemas operativos
+
+Esta guia muestra comandos para **Mac/Linux** y **Windows**. Busca el bloque correspondiente a tu sistema:
+
+| Sistema | Archivo de perfil | Comando para recargar |
+|---------|-------------------|----------------------|
+| **Mac** | `~/.zshrc` | `source ~/.zshrc` |
+| **Linux** | `~/.bashrc` | `source ~/.bashrc` |
+| **Windows (PowerShell)** | `$PROFILE` | Reiniciar terminal |
+| **Windows (alternativa)** | Variables de entorno del sistema | Reiniciar terminal |
+
+**Windows - crear perfil de PowerShell (solo la primera vez):**
+
+Si `$PROFILE` no existe, crearlo:
+
+```powershell
+# Verificar si existe
+Test-Path $PROFILE
+
+# Si retorna False, crearlo:
+New-Item -Path $PROFILE -Type File -Force
+
+# Abrir para editar:
+notepad $PROFILE
+```
+
 ---
 
 ## 1. Context7 (Documentacion de librerias)
@@ -24,18 +50,26 @@ Context7 trae documentacion actualizada de cualquier libreria directo al context
 4. Copiar el API key (formato: `ctx7sk-...`)
 5. Agregar a tu shell profile:
 
+**Mac / Linux:**
 ```bash
 # Agregar al final de ~/.zshrc (Mac) o ~/.bashrc (Linux)
 export CONTEXT7_API_KEY="ctx7sk-tu-api-key-aqui"
 ```
 
-6. Recargar el terminal:
-
-```bash
-source ~/.zshrc
+**Windows (PowerShell):**
+```powershell
+# Agregar al perfil: notepad $PROFILE
+$env:CONTEXT7_API_KEY = "ctx7sk-tu-api-key-aqui"
 ```
 
-**Verificar:** `echo $CONTEXT7_API_KEY` debe mostrar tu key.
+6. Recargar el terminal:
+
+**Mac / Linux:** `source ~/.zshrc`
+**Windows:** Cerrar y abrir una nueva terminal PowerShell
+
+**Verificar:**
+- Mac/Linux: `echo $CONTEXT7_API_KEY`
+- Windows: `echo $env:CONTEXT7_API_KEY`
 
 ---
 
@@ -62,18 +96,26 @@ Claude necesita permisos de **lectura y escritura** para crear y actualizar la d
    - Esto da acceso a la pagina y todas sus sub-paginas
 7. Agregar a tu shell profile:
 
+**Mac / Linux:**
 ```bash
-# Agregar al final de ~/.zshrc
+# Agregar al final de ~/.zshrc (Mac) o ~/.bashrc (Linux)
 export NOTION_TOKEN="ntn_tu-token-aqui"
+```
+
+**Windows (PowerShell):**
+```powershell
+# Agregar al perfil: notepad $PROFILE
+$env:NOTION_TOKEN = "ntn_tu-token-aqui"
 ```
 
 8. Recargar el terminal:
 
-```bash
-source ~/.zshrc
-```
+**Mac / Linux:** `source ~/.zshrc`
+**Windows:** Cerrar y abrir una nueva terminal PowerShell
 
-**Verificar:** `echo $NOTION_TOKEN` debe mostrar tu token.
+**Verificar:**
+- Mac/Linux: `echo $NOTION_TOKEN`
+- Windows: `echo $env:NOTION_TOKEN`
 
 ### Como funciona la documentacion
 
@@ -106,18 +148,26 @@ Supabase permite a Claude gestionar la base de datos completa: crear tablas, eje
 8. **Copiar el token inmediatamente** (no se muestra de nuevo)
 9. Agregar a tu shell profile:
 
+**Mac / Linux:**
 ```bash
-# Agregar al final de ~/.zshrc
+# Agregar al final de ~/.zshrc (Mac) o ~/.bashrc (Linux)
 export SUPABASE_ACCESS_TOKEN="sbp_tu-token-aqui"
+```
+
+**Windows (PowerShell):**
+```powershell
+# Agregar al perfil: notepad $PROFILE
+$env:SUPABASE_ACCESS_TOKEN = "sbp_tu-token-aqui"
 ```
 
 10. Recargar el terminal:
 
-```bash
-source ~/.zshrc
-```
+**Mac / Linux:** `source ~/.zshrc`
+**Windows:** Cerrar y abrir una nueva terminal PowerShell
 
-**Verificar:** `echo $SUPABASE_ACCESS_TOKEN` debe mostrar tu token.
+**Verificar:**
+- Mac/Linux: `echo $SUPABASE_ACCESS_TOKEN`
+- Windows: `echo $env:SUPABASE_ACCESS_TOKEN`
 
 ### Nota sobre seguridad
 
@@ -130,7 +180,9 @@ source ~/.zshrc
 
 ## Configuracion rapida (todo junto)
 
-Si ya tienes los 3 tokens, agrega todo de una vez a tu `~/.zshrc`:
+Si ya tienes los 3 tokens, agrega todo de una vez:
+
+**Mac / Linux** - agregar a `~/.zshrc` o `~/.bashrc`:
 
 ```bash
 # ============================================
@@ -150,11 +202,36 @@ export NOTION_TOKEN="ntn_..."
 export SUPABASE_ACCESS_TOKEN="sbp_..."
 ```
 
-Luego:
+Luego: `source ~/.zshrc`
 
-```bash
-source ~/.zshrc
+**Windows (PowerShell)** - agregar a `$PROFILE` (`notepad $PROFILE`):
+
+```powershell
+# ============================================
+# MV Plugin - Tokens para MCP Servers
+# ============================================
+
+# Context7 - Documentacion de librerias
+# Obtener en: https://context7.com/dashboard
+$env:CONTEXT7_API_KEY = "ctx7sk-..."
+
+# Notion - Documentacion de MV
+# Obtener en: https://notion.so/my-integrations
+$env:NOTION_TOKEN = "ntn_..."
+
+# Supabase - Base de datos
+# Obtener en: https://supabase.com/dashboard → Account → Access Tokens
+$env:SUPABASE_ACCESS_TOKEN = "sbp_..."
 ```
+
+Luego cerrar y abrir una nueva terminal PowerShell.
+
+**Windows (alternativa sin PowerShell):** Agregar como variables de entorno del sistema:
+1. `Win + R` → `sysdm.cpl` → Enter
+2. Pestana **"Opciones avanzadas"** → **"Variables de entorno"**
+3. En **"Variables de usuario"**, click **"Nueva"** para cada token
+4. Poner el nombre (ej: `CONTEXT7_API_KEY`) y el valor (ej: `ctx7sk-...`)
+5. Aceptar todo y reiniciar la terminal
 
 ---
 
@@ -162,12 +239,24 @@ source ~/.zshrc
 
 Despues de configurar los tokens, reiniciar Claude Code y verificar:
 
+**Mac / Linux:**
 ```bash
 # 1. Verificar que las variables estan cargadas
 echo $CONTEXT7_API_KEY
 echo $NOTION_TOKEN
 echo $SUPABASE_ACCESS_TOKEN
+```
 
+**Windows (PowerShell):**
+```powershell
+# 1. Verificar que las variables estan cargadas
+echo $env:CONTEXT7_API_KEY
+echo $env:NOTION_TOKEN
+echo $env:SUPABASE_ACCESS_TOKEN
+```
+
+**Luego en cualquier sistema:**
+```bash
 # 2. Abrir Claude Code en cualquier proyecto
 claude
 
@@ -195,7 +284,9 @@ Estos MCP servers funcionan sin tokens adicionales:
 
 ### mv-db-query (MySQL / PostgreSQL)
 
-Si necesitas acceso directo a una base de datos, agrega estas variables a tu `.env` o `~/.zshrc`:
+Si necesitas acceso directo a una base de datos, agrega estas variables:
+
+**Mac / Linux** - agregar a `~/.zshrc` o `~/.bashrc`:
 
 ```bash
 # Tipo de base de datos: mysql | postgres (default: mysql)
@@ -208,6 +299,19 @@ export DB_ACCESS_USER="..."
 export DB_ACCESS_PASSWORD="..."
 export DB_ACCESS_NAME="..."
 ```
+
+**Windows (PowerShell)** - agregar a `$PROFILE`:
+
+```powershell
+$env:DB_ACCESS_TYPE = "mysql"
+$env:DB_ACCESS_HOST = "..."
+$env:DB_ACCESS_PORT = "3306"
+$env:DB_ACCESS_USER = "..."
+$env:DB_ACCESS_PASSWORD = "..."
+$env:DB_ACCESS_NAME = "..."
+```
+
+Tambien se pueden agregar en un archivo `.env` en la raiz del proyecto (aplica a todos los sistemas).
 
 ---
 
