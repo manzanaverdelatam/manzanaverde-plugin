@@ -212,6 +212,78 @@ RAILWAY_TOKEN=             # Token de Railway para deploys
 
 ---
 
+## Tokens no configurados - Guia al usuario
+
+Si el usuario intenta usar una funcionalidad que requiere un token no configurado, **NO fallar silenciosamente**. Explicar claramente que necesita y como configurarlo:
+
+### Notion (`NOTION_TOKEN`)
+Se necesita para: documentar proyectos, sincronizar docs, leer documentacion existente.
+```
+Para usar Notion necesitas configurar el token:
+
+1. Ir a https://www.notion.so/my-integrations
+2. Crear integracion "MV Claude Code" con permisos de Read + Update + Insert
+3. Copiar el token (formato: ntn_...)
+4. Agregar a tu ~/.zshrc:
+   export NOTION_TOKEN="ntn_tu-token"
+5. Ejecutar: source ~/.zshrc
+6. Reiniciar Claude Code
+
+Guia completa: ver SETUP.md del plugin (seccion 2)
+```
+
+### Supabase (`SUPABASE_ACCESS_TOKEN`)
+Se necesita para: consultar bases de datos Supabase.
+```
+Para usar Supabase necesitas configurar el token:
+
+1. Ir a https://supabase.com/dashboard
+2. Click en tu avatar → Account Preferences → Access Tokens
+3. Generar token y copiarlo (formato: sbp_...)
+4. Agregar a tu ~/.zshrc:
+   export SUPABASE_ACCESS_TOKEN="sbp_tu-token"
+5. Ejecutar: source ~/.zshrc
+6. Reiniciar Claude Code
+
+Guia completa: ver SETUP.md del plugin (seccion 3)
+```
+
+### Base de datos (`DB_ACCESS_*`)
+Se necesita para: queries directos a MySQL o PostgreSQL via el MCP server mv-db-query.
+```
+Para conectarte a una base de datos necesitas configurar las credenciales:
+
+1. Pedir las credenciales al Tech Lead
+2. Agregar a tu ~/.zshrc o al .env del proyecto:
+   export DB_ACCESS_TYPE="mysql"   # mysql | postgres
+   export DB_ACCESS_HOST="..."
+   export DB_ACCESS_PORT="3306"    # 3306 MySQL, 5432 PostgreSQL
+   export DB_ACCESS_USER="..."
+   export DB_ACCESS_PASSWORD="..."
+   export DB_ACCESS_NAME="..."
+3. Ejecutar: source ~/.zshrc
+4. Reiniciar Claude Code
+
+Guia completa: ver SETUP.md del plugin (seccion Servidores custom)
+```
+
+### Context7 (`CONTEXT7_API_KEY`)
+Se necesita para: documentacion actualizada de librerias (funciona sin key pero con rate limits).
+```
+Para usar Context7 sin limites:
+
+1. Ir a https://context7.com/dashboard
+2. Crear cuenta y generar API key (formato: ctx7sk-...)
+3. Agregar a tu ~/.zshrc:
+   export CONTEXT7_API_KEY="ctx7sk-tu-key"
+4. Ejecutar: source ~/.zshrc
+5. Reiniciar Claude Code
+
+Guia completa: ver SETUP.md del plugin (seccion 1)
+```
+
+---
+
 ## Skills Disponibles del Plugin
 
 | Comando | Descripcion |
