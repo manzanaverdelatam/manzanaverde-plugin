@@ -109,7 +109,7 @@ try {
 - **Idioma:** Strings de UI en espanol, codigo y variables en ingles
 - **Archivos:** camelCase para archivos, PascalCase para componentes React
 - **Branches:** `feature/nombre-corto`, `fix/nombre-corto`, `hotfix/nombre-corto`
-- **Docs auto-update:** Despues de cada tarea completada, SIEMPRE actualizar `docs/` con: nuevos componentes, APIs consumidas, estructura actual, estado de funcionalidades (✅ done, 🚧 WIP, ❌ pendiente). Si `docs/` no existe, crearlo.
+- **Docs auto-update:** Despues de cada tarea completada, SIEMPRE actualizar `docs/` con: nuevos componentes, APIs consumidas, estructura actual, estado de funcionalidades (✅ done, 🚧 WIP, ❌ pendiente). Si `docs/` no existe, crearlo. **`docs/PROJECT_SCOPE.md` se actualiza en CADA tarea** (version, estado, funcionalidades, estructura de archivos).
 - **Docs sync:** Al hacer `git push`, sincronizar `docs/` a Notion automaticamente (si `NOTION_TOKEN` esta configurado)
 
 ---

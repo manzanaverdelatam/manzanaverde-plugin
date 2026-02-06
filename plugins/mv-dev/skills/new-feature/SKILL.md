@@ -187,6 +187,12 @@ Despues de completar la feature, SIEMPRE actualizar la documentacion del proyect
    - 🚧 Funcionalidad parcialmente implementada (WIP)
    - ❌ Funcionalidad pendiente
 
+4. **Actualizar `docs/PROJECT_SCOPE.md`** (SIEMPRE):
+   - Incrementar version
+   - Actualizar fecha
+   - Agregar/mover la feature en la seccion de funcionalidades (✅/🚧/❌)
+   - Actualizar estructura de archivos si cambio
+
 ## Paso 6: PR Description
 
 Generar template de PR:

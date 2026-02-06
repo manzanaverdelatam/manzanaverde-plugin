@@ -46,6 +46,7 @@ vive solo en Notion y se consulta con /mv-dev:mv-docs.
 
 ```
 docs/
+├── PROJECT_SCOPE.md         # Vision general: estado, funcionalidades, estructura (SE ACTUALIZA SIEMPRE)
 ├── BUSINESS_LOGIC.md        # Logica de negocio de ESTE proyecto
 ├── API.md                   # Endpoints que ESTE proyecto expone
 ├── TABLES.md                # Tablas SQL que ESTE proyecto usa/crea
@@ -81,6 +82,7 @@ Cuando alguien abre un proyecto que ya tiene documentacion:
 
 1. **Si `docs/` no existe**: crearlo con la estructura completa (ver "Estructura local de docs/")
 2. **Si `docs/` ya existe**: actualizar los archivos afectados por la tarea
+3. **SIEMPRE actualizar `docs/PROJECT_SCOPE.md`** - Este archivo es el mapa general del proyecto y se actualiza en CADA tarea
 
 **Que actualizar segun la tarea:**
 
@@ -92,7 +94,7 @@ Cuando alguien abre un proyecto que ya tiene documentacion:
 | Nueva feature completa | `docs/COMPONENTS.md` + `docs/API.md` + `docs/CHANGELOG.md` |
 | Cambio de logica de negocio | `docs/BUSINESS_LOGIC.md` |
 | Cambio de estructura / deps | `docs/ARCHITECTURE.md` |
-| Cualquier tarea | `docs/CHANGELOG.md` (siempre) |
+| **Cualquier tarea** | **`docs/PROJECT_SCOPE.md` + `docs/CHANGELOG.md` (siempre ambos)** |
 
 **Formato de status en docs:**
 
@@ -129,6 +131,75 @@ En docs/CHANGELOG.md agregar:
   ## [fecha] - Claude
   - ✅ Componente CoverageChecker con verificacion de cobertura
 ```
+
+### Template de PROJECT_SCOPE.md
+
+```markdown
+# PROJECT_SCOPE.md - [Nombre del Proyecto]
+
+> **Ultima actualizacion:** [Fecha y hora]
+> **Version:** [1.0, 1.1, etc. - incrementar con cada cambio significativo]
+> **Estado:** [En desarrollo / MVP listo / En iteracion / Staging / Produccion]
+
+## 1. Resumen del Proyecto
+[2-3 oraciones describiendo que hace el proyecto, para quien y en que paises]
+
+## 2. Funcionalidades
+
+### Implementadas ✅
+- [x] [Funcionalidad 1] - [breve descripcion]
+- [x] [Funcionalidad 2] - [breve descripcion]
+
+### En Progreso 🚧
+- [ ] [Funcionalidad en desarrollo]
+
+### Pendientes ❌
+- [ ] [Funcionalidad por hacer]
+
+## 3. Estructura de Archivos
+[nombre-proyecto]/
+├── src/
+│   ├── app/
+│   │   ├── page.tsx              # [Descripcion]
+│   │   └── [ruta]/
+│   │       └── page.tsx          # [Descripcion]
+│   ├── components/
+│   │   ├── [Componente1].tsx     # [Descripcion]
+│   │   └── [Componente2].tsx     # [Descripcion]
+│   ├── lib/
+│   │   └── [utilidades]
+│   ├── hooks/
+│   │   └── [hooks]
+│   └── services/
+│       └── [servicios]
+├── docs/                         # Documentacion del proyecto
+├── tests/                        # Tests
+└── PROJECT_SCOPE.md
+
+## 4. APIs Consumidas
+| Endpoint | Metodo | Descripcion |
+|----------|--------|-------------|
+| [endpoint] | [GET/POST] | [que hace] |
+
+## 5. Dependencias Clave
+| Paquete | Version | Uso |
+|---------|---------|-----|
+| [paquete] | [version] | [para que se usa] |
+
+## 6. Variables de Entorno
+| Variable | Descripcion | Requerida |
+|----------|-------------|-----------|
+| [VAR] | [descripcion] | Si/No |
+```
+
+**Reglas de actualizacion de PROJECT_SCOPE.md:**
+
+1. **Siempre actualizar** despues de cada tarea completada, sin excepciones
+2. **Incrementar version** cuando se agrega/completa una funcionalidad (1.0 → 1.1 → 1.2...)
+3. **Mover funcionalidades** entre secciones segun avancen (❌ → 🚧 → ✅)
+4. **Actualizar estructura** de archivos cuando se crean/eliminan archivos significativos
+5. **Actualizar fecha** de "Ultima actualizacion" en cada cambio
+6. Se sincroniza con Notion igual que los demas archivos de `docs/`
 
 ### 4. Actualizar documentacion → On demand
 

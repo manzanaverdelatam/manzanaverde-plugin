@@ -217,6 +217,11 @@ Despues de crear la pagina, SIEMPRE actualizar la documentacion del proyecto:
 
 3. Marcar el estado: ✅ si esta completa, 🚧 si es WIP
 
+4. **Actualizar `docs/PROJECT_SCOPE.md`** (SIEMPRE):
+   - Incrementar version y actualizar fecha
+   - Agregar la pagina en funcionalidades (✅/🚧)
+   - Actualizar estructura de archivos con la nueva ruta
+
 ## Checklist de la Pagina
 
 Antes de terminar, verificar:

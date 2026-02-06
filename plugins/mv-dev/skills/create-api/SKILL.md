@@ -321,6 +321,11 @@ Despues de crear el endpoint, SIEMPRE actualizar la documentacion del proyecto:
 
 3. Marcar el estado: ✅ si esta completo con tests, 🚧 si falta algo
 
+4. **Actualizar `docs/PROJECT_SCOPE.md`** (SIEMPRE):
+   - Incrementar version y actualizar fecha
+   - Agregar el endpoint en funcionalidades (✅/🚧)
+   - Actualizar seccion de APIs consumidas/expuestas
+
 ## Checklist del Endpoint
 
 - [ ] Schema Zod para validacion de input

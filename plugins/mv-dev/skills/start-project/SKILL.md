@@ -78,6 +78,7 @@ Luego crear esta estructura adicional:
 │   ├── setup.ts                 # Setup de tests
 │   └── factories.ts             # Test data factories
 ├── docs/                        # Documentacion del proyecto (sync con Notion)
+│   ├── PROJECT_SCOPE.md         # Vision general, estado, funcionalidades, estructura
 │   ├── BUSINESS_LOGIC.md        # Logica de negocio, reglas, flujos
 │   ├── API.md                   # Endpoints, params, responses
 │   ├── TABLES.md                # Schema de tablas SQL usadas
@@ -385,6 +386,7 @@ Tailwind CSS v4 with MV design tokens, and testing setup."
 
 Crear los archivos en `docs/` con contenido inicial basado en la informacion del proyecto:
 
+- **`docs/PROJECT_SCOPE.md`** - Vision general del proyecto con: resumen, funcionalidades (✅/🚧/❌), estructura de archivos, APIs consumidas, dependencias y env vars. Este archivo se actualiza en CADA tarea completada (ver template en doc-agent).
 - **`docs/BUSINESS_LOGIC.md`** - Si el usuario proporciono un PRD, extraer toda la logica de negocio (reglas, flujos, entidades, validaciones, edge cases). Si no hay PRD, crear plantilla vacia para llenar despues.
 - **`docs/API.md`** - Pre-llenar si el proyecto es backend o monorepo (con el formato estandar de MV). Si es frontend, crear plantilla para cuando se consuman APIs.
 - **`docs/TABLES.md`** - Crear plantilla para documentar las tablas SQL que use el proyecto.
