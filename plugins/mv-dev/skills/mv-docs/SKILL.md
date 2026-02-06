@@ -136,30 +136,7 @@ La sincronizacion push se ejecuta en **dos situaciones**:
 1. **On demand**: Cuando el usuario dice "sube los docs a Notion", "sincroniza a Notion", "push docs", "sincroniza docs", etc.
 2. **Automatico en git push**: Cada vez que se hace `git push`, sincronizar `docs/` a Notion antes del push
 
-**Flujo de push (aplica en ambos casos):**
-
-1. Leer el contenido completo de cada archivo en `docs/`
-2. Buscar la pagina del proyecto en Notion (por link de GitHub de `.git/config`)
-3. Si la pagina no existe: crearla con la estructura completa
-4. **Replicar el contenido completo** de cada archivo como bloques nativos de Notion en la sub-pagina correspondiente
-5. Informar al usuario que secciones se actualizaron
-
-**CRITICO - Replicacion completa, NO referencias:**
-
-**NUNCA** poner solo un link o referencia al archivo .md de GitHub. Cada archivo `docs/*.md` debe replicarse como bloques nativos de Notion:
-- `# Heading` → bloque `heading_1`
-- `## Heading` → bloque `heading_2`
-- `### Heading` → bloque `heading_3`
-- Parrafos → bloque `paragraph`
-- `- item` → bloque `bulleted_list_item`
-- `` ```code``` `` → bloque `code`
-- Tablas → convertir a texto formateado o bloques de tabla
-
-**Procedimiento por sub-pagina:**
-1. Obtener ID de la sub-pagina existente
-2. Eliminar todos los bloques hijos existentes (`API-delete-a-block`)
-3. Crear nuevos bloques con el contenido completo del .md (`API-patch-block-children`)
-4. Cada sync es un **reemplazo completo** del contenido
+**REGLA ABSOLUTA:** NUNCA sugerir alternativas manuales, herramientas externas, ni decir que "es complejo". Hacerlo con las herramientas MCP de Notion disponibles. La fuente de verdad es `docs/`. Notion es el respaldo fiel.
 
 **Mapeo de archivos a sub-paginas:**
 
@@ -173,7 +150,72 @@ La sincronizacion push se ejecuta en **dos situaciones**:
 | `docs/ARCHITECTURE.md` | "Architecture" |
 | `docs/CHANGELOG.md` | "Changelog" |
 
-Si `NOTION_TOKEN` no esta configurado, informar al usuario y continuar sin sync.
+**Procedimiento por cada archivo → sub-pagina (seguir EXACTAMENTE):**
+
+**Paso 1 - Limpiar la sub-pagina:**
+```
+1. Llamar API-get-block-children(block_id = ID de la sub-pagina)
+2. Para CADA bloque hijo retornado: llamar API-delete-a-block(block_id = id del bloque)
+   (eliminar EN PARALELO si hay muchos para mayor velocidad)
+3. Resultado: sub-pagina vacia
+```
+
+**Paso 2 - Convertir markdown a bloques Notion:**
+
+El MCP de Notion acepta `paragraph` y `bulleted_list_item`. Convertir asi:
+
+| Markdown | Bloque Notion |
+|----------|---------------|
+| `# Titulo` | `paragraph` con texto **bold** |
+| `## Subtitulo` | `paragraph` con texto **bold** |
+| `### Sub-subtitulo` | `paragraph` con texto **bold** |
+| Texto normal | `paragraph` |
+| `- item` | `bulleted_list_item` |
+| Bloque de codigo | `paragraph` con el codigo como texto |
+| Tabla markdown | `bulleted_list_item` por cada fila |
+| Linea vacia | `paragraph` con `" "` como contenido |
+
+**Paso 3 - Escribir bloques en Notion:**
+```
+Llamar API-patch-block-children con:
+  block_id = ID de la sub-pagina
+  children = [array de bloques convertidos]
+
+Limite: 100 bloques por llamada. Si hay mas, hacer multiples llamadas.
+```
+
+**Ejemplo real de children:**
+```json
+[
+  {
+    "type": "paragraph",
+    "paragraph": {
+      "rich_text": [{"type": "text", "text": {"content": "API Endpoints"}}]
+    }
+  },
+  {
+    "type": "paragraph",
+    "paragraph": {
+      "rich_text": [{"type": "text", "text": {"content": "Base URL: https://api-staging.manzanaverde.com"}}]
+    }
+  },
+  {
+    "type": "bulleted_list_item",
+    "bulleted_list_item": {
+      "rich_text": [{"type": "text", "text": {"content": "GET /api/v1/meals - Lista de comidas"}}]
+    }
+  }
+]
+```
+
+**Reglas inquebrantables:**
+1. NUNCA poner link al .md de GitHub en vez del contenido
+2. NUNCA sugerir copiar manualmente o usar herramientas externas
+3. SIEMPRE limpiar la sub-pagina antes de escribir (delete → append)
+4. SIEMPRE respetar el limite de 100 bloques por llamada
+5. Si algo falla, reintentar o informar el error exacto. No rendirse.
+
+Si `NOTION_TOKEN` no esta configurado, informar al usuario con las instrucciones de setup y detener el sync.
 
 ### Flujo tipico
 

@@ -218,66 +218,7 @@ La sincronizacion de `docs/` a Notion se ejecuta en **dos situaciones**:
 1. **Automatico en git push**: Cada vez que se hace `git push`, sincronizar `docs/` a Notion antes del push
 2. **On demand**: Cuando el usuario pide explicitamente sincronizar, subir docs, push docs, etc.
 
-**Flujo de sync (aplica en ambos casos):**
-
-1. Si `NOTION_TOKEN` no esta configurado: informar al usuario y continuar sin sync
-2. Obtener el link de GitHub del proyecto (de `.git/config` → remote origin URL)
-3. Buscar la pagina del proyecto en Notion **por ese link** (identificador unico)
-4. Si la pagina no existe: crearla con la estructura completa (ver "Estructura de documentacion en Notion")
-5. **Para CADA archivo en `docs/`**: leer el contenido completo y replicarlo en la sub-pagina correspondiente de Notion
-6. Informar: "Docs sincronizados a Notion (pagina: [nombre-proyecto])"
-
-Si es auto-sync en git push: ejecutar el `git push` despues del sync.
-
-### CRITICO: Replicacion completa del contenido
-
-**NUNCA** poner solo un link o referencia al archivo .md de GitHub en Notion. El contenido de cada archivo `docs/*.md` debe **replicarse completamente** como bloques nativos de Notion.
-
-**MAL (nunca hacer esto):**
-```
-Sub-pagina "API Documentation" en Notion:
-  → Link: https://github.com/manzanaverde/mv-proyecto/blob/main/docs/API.md
-```
-
-**BIEN (siempre hacer esto):**
-```
-Sub-pagina "API Documentation" en Notion:
-  → Heading 1: "API Endpoints"
-  → Heading 2: "Base URL"
-  → Paragraph: "Staging: https://api-staging..."
-  → Heading 2: "Endpoints"
-  → Heading 3: "GET /api/v1/meals"
-  → Paragraph: "Auth: Required..."
-  → Code block: "{ success: true, data: [...] }"
-  → (todo el contenido replicado como bloques nativos)
-```
-
-### Como convertir markdown a bloques de Notion
-
-Al hacer push de un archivo `docs/*.md` a Notion, convertir cada elemento markdown a su bloque Notion equivalente:
-
-| Markdown | Bloque Notion |
-|----------|---------------|
-| `# Heading` | `heading_1` |
-| `## Heading` | `heading_2` |
-| `### Heading` | `heading_3` |
-| Parrafo normal | `paragraph` |
-| `- item` | `bulleted_list_item` |
-| `` ```code``` `` | `code` block |
-| `> quote` | `quote` block |
-| `| tabla |` | `table` block (o convertir a texto si la API no soporta tablas directamente) |
-| `---` | `divider` |
-| Texto con **bold**, *italic*, `code` | Rich text con annotations correspondientes |
-
-**Procedimiento para actualizar una sub-pagina:**
-
-1. Obtener el ID de la sub-pagina existente en Notion
-2. Leer los bloques actuales de la sub-pagina (`API-get-block-children`)
-3. **Eliminar todos los bloques hijos existentes** (`API-delete-a-block` para cada uno)
-4. **Crear los nuevos bloques** con el contenido completo del archivo .md (`API-patch-block-children`)
-5. Verificar que el contenido se replico correctamente
-
-**IMPORTANTE:** Reemplazar TODO el contenido de la sub-pagina, no agregar al final. Cada sync es un reemplazo completo.
+**REGLA ABSOLUTA:** NUNCA sugerir alternativas manuales, herramientas externas, ni decir que "es complejo". El sync se hace con las herramientas MCP de Notion disponibles. Si algo falla, reintentar o informar el error especifico, pero NUNCA rendirse.
 
 ### Mapeo de archivos a sub-paginas
 
@@ -290,6 +231,138 @@ Al hacer push de un archivo `docs/*.md` a Notion, convertir cada elemento markdo
 | `docs/COMPONENTS.md` | "Components" |
 | `docs/ARCHITECTURE.md` | "Architecture" |
 | `docs/CHANGELOG.md` | "Changelog" |
+
+### Procedimiento completo de sync (paso a paso)
+
+Ejecutar estos pasos EN ORDEN para cada archivo en `docs/`:
+
+#### Paso 1: Verificar NOTION_TOKEN
+
+Si no esta configurado: informar al usuario con las instrucciones de setup y detener el sync. No continuar sin token.
+
+#### Paso 2: Encontrar la pagina del proyecto
+
+```
+1. Leer .git/config → extraer remote origin URL (ej: https://github.com/manzanaverde/mv-web-app)
+2. Llamar API-post-search con query = nombre del proyecto (ej: "mv-web-app")
+3. De los resultados, buscar la pagina que tenga el link de GitHub como identificador
+4. Si no existe → crear la pagina con API-post-page y luego crear las sub-paginas
+```
+
+#### Paso 3: Encontrar las sub-paginas
+
+```
+1. Llamar API-get-block-children con block_id = ID de la pagina del proyecto
+2. De los resultados, identificar las sub-paginas por su titulo (child_page blocks)
+3. Guardar el ID de cada sub-pagina para el paso siguiente
+```
+
+#### Paso 4: Para CADA archivo en docs/ → Sincronizar a su sub-pagina
+
+**Este es el paso critico. Seguir EXACTAMENTE:**
+
+**4a. Leer el archivo local:**
+```
+Leer docs/API.md (o el archivo que corresponda)
+```
+
+**4b. Limpiar la sub-pagina existente en Notion:**
+```
+1. Llamar API-get-block-children con block_id = ID de la sub-pagina
+2. Obtener la lista de bloques hijos (cada uno tiene un "id")
+3. Para CADA bloque hijo: llamar API-delete-a-block con block_id = id del bloque
+   (si hay muchos bloques, eliminarlos EN PARALELO para mayor velocidad)
+4. Resultado: la sub-pagina queda vacia, lista para recibir contenido nuevo
+```
+
+**4c. Convertir el markdown a bloques de Notion y escribirlos:**
+
+El MCP de Notion soporta dos tipos de bloque: `paragraph` y `bulleted_list_item`. Usar estos para representar TODO el contenido del markdown:
+
+**Conversion de markdown a bloques:**
+
+| Elemento Markdown | Bloque Notion |
+|-------------------|---------------|
+| `# Titulo` | `paragraph` con texto **bold** (simula heading 1) |
+| `## Subtitulo` | `paragraph` con texto **bold** (simula heading 2) |
+| `### Sub-subtitulo` | `paragraph` con texto **bold** (simula heading 3) |
+| Texto normal | `paragraph` con rich_text normal |
+| `- item de lista` | `bulleted_list_item` |
+| `**texto bold**` | rich_text con `content` y el texto incluye ** para enfasis visual |
+| `` `codigo inline` `` | rich_text normal (el backtick se preserva como texto) |
+| Bloque de codigo | `paragraph` con el codigo como texto (preservar formato) |
+| `| tabla |` | Convertir a `bulleted_list_item` por cada fila, o `paragraph` formateado |
+| Linea vacia | `paragraph` con rich_text `[{"type":"text","text":{"content":" "}}]` |
+
+**4d. Escribir los bloques en Notion:**
+
+Llamar `API-patch-block-children` con:
+- `block_id` = ID de la sub-pagina
+- `children` = array de bloques convertidos
+
+**EJEMPLO REAL de llamada para un archivo con heading + parrafo + lista:**
+
+```json
+{
+  "block_id": "id-de-la-subpagina",
+  "children": [
+    {
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [{"type": "text", "text": {"content": "API Endpoints"}}]
+      }
+    },
+    {
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [{"type": "text", "text": {"content": "Base URL: https://api-staging.manzanaverde.com"}}]
+      }
+    },
+    {
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [{"type": "text", "text": {"content": "GET /api/v1/meals - Lista de comidas"}}]
+      }
+    },
+    {
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [{"type": "text", "text": {"content": "POST /api/v1/orders - Crear pedido"}}]
+      }
+    }
+  ]
+}
+```
+
+**IMPORTANTE sobre limites de la API:**
+- Notion permite maximo **100 bloques por llamada** a `API-patch-block-children`
+- Si el archivo tiene mas de 100 lineas/bloques: dividir en multiples llamadas
+- Cada llamada subsiguiente agrega al final (append), asi que el orden se mantiene
+- Para archivos largos: hacer la primera llamada con los primeros 100 bloques, luego la segunda con los siguientes 100, etc.
+
+#### Paso 5: Confirmar el sync
+
+Despues de sincronizar todos los archivos, informar al usuario:
+```
+Docs sincronizados a Notion:
+  - docs/PROJECT_SCOPE.md → Overview ✅
+  - docs/API.md → API Documentation ✅
+  - docs/BUSINESS_LOGIC.md → Business Logic ✅
+  - docs/COMPONENTS.md → Components ✅
+  - docs/ARCHITECTURE.md → Architecture ✅
+  - docs/TABLES.md → Tables ✅
+  - docs/CHANGELOG.md → Changelog ✅
+```
+
+### Reglas inquebrantables del sync
+
+1. **NUNCA** poner un link al archivo .md de GitHub en vez del contenido. SIEMPRE replicar el contenido completo.
+2. **NUNCA** sugerir "copiar manualmente", "usar herramienta externa", o "es muy complejo". Hacerlo con las herramientas MCP disponibles.
+3. **NUNCA** dejar contenido viejo en la sub-pagina. SIEMPRE limpiar (delete all blocks) antes de escribir.
+4. **NUNCA** rendirse si un paso falla. Reintentar o informar el error especifico al usuario.
+5. **SIEMPRE** limpiar primero, escribir despues. El orden es: get-children → delete-each → patch-new-children.
+6. **SIEMPRE** respetar el limite de 100 bloques por llamada. Dividir si es necesario.
+7. La fuente de verdad es `docs/`. Notion es el respaldo. El contenido en Notion debe ser un reflejo fiel de `docs/`.
 
 ## Estructura de documentacion en Notion
 

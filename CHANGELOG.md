@@ -6,14 +6,17 @@ Todos los cambios notables del plugin mv-dev se documentan aqui.
 
 ### Added
 - **SessionStart hook** para deteccion de tokens MCP faltantes al inicio de sesion (`check-mcp-tokens.sh`)
-- Replicacion completa de contenido markdown a bloques nativos de Notion en el sync de docs (en vez de solo links a GitHub)
 - Sync on demand: la sincronizacion docs/ → Notion ahora se ejecuta tambien cuando el usuario lo pide explicitamente, no solo en git push
-- Tabla de conversion markdown → bloques Notion en doc-agent y mv-docs skill
 - Mapeo explicito de archivos docs/*.md a sub-paginas de Notion
+- CHANGELOG.md del plugin
 
 ### Changed
-- Seccion de sync en `doc-agent.md` reescrita con instrucciones detalladas de replicacion
-- Seccion push en `mv-docs/SKILL.md` actualizada con los mismos patrones de replicacion
+- Sync a Notion ahora replica contenido completo como bloques nativos (paragraph + bulleted_list_item) en vez de poner links a GitHub
+- Procedimiento de sync reescrito con pasos exactos: get-children → delete-each → patch-new-children
+- Incluye ejemplo real de JSON para `API-patch-block-children` con el formato correcto
+- Reglas inquebrantables: nunca sugerir alternativas manuales, nunca rendirse, nunca poner links en vez de contenido
+- Limite de 100 bloques por llamada documentado con instruccion de dividir en multiples llamadas
+- Seccion de sync en `doc-agent.md` y `mv-docs/SKILL.md` completamente reescritas
 
 ## [1.3.0] - 2026-02-06
 
