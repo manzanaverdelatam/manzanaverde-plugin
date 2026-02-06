@@ -51,7 +51,7 @@ Ejecutados automaticamente al escribir/editar archivos:
 - **memory-keeper** - Memoria persistente entre sesiones de Claude Code
 - **playwright** - Automatizacion de browser para testing E2E
 - **notion** - Crea, lee y actualiza documentacion de proyectos en Notion (requiere `NOTION_TOKEN`)
-- **supabase-mcp** - Gestion de base de datos Supabase en modo read-only (requiere `SUPABASE_ACCESS_TOKEN`)
+- **supabase-mcp** - Gestion completa de Supabase: tablas, migraciones, queries (requiere `SUPABASE_ACCESS_TOKEN`)
 
 **Custom de MV:**
 - **mv-db-query** - Queries SQL de solo lectura, MySQL/PostgreSQL (LIMIT obligatorio)

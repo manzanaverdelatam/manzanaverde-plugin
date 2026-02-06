@@ -187,7 +187,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 # API
 NEXT_PUBLIC_API_URL=
 
-# DB (solo si se necesita acceso directo)
+# Supabase (si el proyecto usa Supabase)
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+# DB directa (solo si se necesita acceso directo sin Supabase)
 DB_ACCESS_TYPE=            # mysql | postgres
 DB_ACCESS_HOST=
 DB_ACCESS_PORT=3306        # 3306 MySQL, 5432 PostgreSQL
@@ -195,6 +199,13 @@ DB_ACCESS_USER=
 DB_ACCESS_PASSWORD=
 DB_ACCESS_NAME=
 ```
+
+**Si el proyecto usa Supabase y el `SUPABASE_ACCESS_TOKEN` esta configurado:**
+1. Usar la herramienta `get_project_url` del MCP server supabase-mcp para obtener la URL del proyecto
+2. Usar la herramienta `get_publishable_keys` para obtener la anon key
+3. Escribir ambos valores automaticamente en el `.env.local` del proyecto
+
+Esto evita que el usuario tenga que buscar y copiar estos valores manualmente.
 
 ### CLAUDE.md del proyecto
 

@@ -90,7 +90,7 @@ La integracion solo puede acceder a las paginas que le compartas explicitamente.
 
 ## 3. Supabase (Base de datos)
 
-Supabase permite a Claude consultar y gestionar la base de datos. El plugin esta configurado en **modo solo lectura** por seguridad.
+Supabase permite a Claude gestionar la base de datos completa: crear tablas, ejecutar migraciones, queries, edge functions, y mas. Tambien puede obtener automaticamente la URL y anon key del proyecto para el `.env`.
 
 ### Paso a paso
 
@@ -122,7 +122,7 @@ source ~/.zshrc
 ### Nota sobre seguridad
 
 - El token da acceso a **todos** los proyectos de tu cuenta Supabase
-- El plugin esta configurado con `--read-only` para que Claude no pueda modificar datos
+- Claude tiene acceso completo a los proyectos de tu cuenta (crear tablas, migraciones, etc.)
 - **Nunca** compartas tu token con nadie
 - Si tu token se compromete, revocalo inmediatamente en Supabase dashboard
 

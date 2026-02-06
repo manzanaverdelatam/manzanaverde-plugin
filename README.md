@@ -107,7 +107,7 @@ Se ejecutan automaticamente al escribir o editar archivos:
 | Memory Keeper | No | Memoria persistente entre sesiones |
 | Playwright | No | Automatizacion de browser para E2E |
 | Notion | `NOTION_TOKEN` | Crea, lee y actualiza documentacion de proyectos en Notion |
-| Supabase | `SUPABASE_ACCESS_TOKEN` | Base de datos Supabase (solo lectura) |
+| Supabase | `SUPABASE_ACCESS_TOKEN` | Gestion completa de Supabase (tablas, migraciones, queries) |
 
 **Custom de MV:**
 
@@ -195,7 +195,7 @@ manzanaverde-plugin/
 - Los hooks detectan **automaticamente** secrets expuestos y bloquean la operacion
 - Las queries a base de datos son **solo lectura** con LIMIT obligatorio
 - Las tablas sensibles (`payments`, `user_payment_methods`, etc.) estan **bloqueadas**
-- Supabase esta configurado en modo **read-only**
+- Supabase tiene acceso completo pero los tokens nunca se exponen en el codigo
 - Los tokens nunca se commitean: se cargan desde variables de entorno
 
 ## Soporte

@@ -69,8 +69,8 @@
     },
     "supabase-mcp": {
       "command": "npx",
-      "args": ["-y", "@supabase/mcp-server-supabase@latest", "--read-only", "--access-token", "${SUPABASE_ACCESS_TOKEN}"],
-      "description": "Acceso a Supabase para gestion de base de datos, tablas y queries en modo solo lectura (requiere SUPABASE_ACCESS_TOKEN)"
+      "args": ["-y", "@supabase/mcp-server-supabase@latest", "--access-token", "${SUPABASE_ACCESS_TOKEN}"],
+      "description": "Acceso completo a Supabase: crear tablas, migraciones, queries, edge functions (requiere SUPABASE_ACCESS_TOKEN)"
     },
     "mv-db-query": {
       "command": "node",
