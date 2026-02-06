@@ -211,20 +211,85 @@ Cuando el usuario pide actualizar la documentacion explicitamente:
 4. Si hay `NOTION_TOKEN`: actualizar tambien las paginas en Notion
 5. Informar al usuario que secciones se actualizaron y donde
 
-### 5. Auto-sync en git push
+### 5. Sync docs/ → Notion (push)
 
-**Cada vez que se hace `git push`**, sincronizar automaticamente `docs/` a Notion:
+La sincronizacion de `docs/` a Notion se ejecuta en **dos situaciones**:
 
-1. Detectar que se va a hacer `git push`
-2. Verificar si hay cambios en `docs/`
-3. Si hay cambios y `NOTION_TOKEN` esta configurado:
-   a. Obtener el link de GitHub del proyecto (de `.git/config` → remote origin URL)
-   b. Buscar la pagina del proyecto en Notion **por ese link** (identificador unico)
-   c. Actualizar las sub-paginas de esa pagina con el contenido de `docs/`
-4. Hacer el `git push`
-5. Informar: "Docs sincronizados a Notion (pagina: [nombre-proyecto])"
+1. **Automatico en git push**: Cada vez que se hace `git push`, sincronizar `docs/` a Notion antes del push
+2. **On demand**: Cuando el usuario pide explicitamente sincronizar, subir docs, push docs, etc.
 
-Si no hay `NOTION_TOKEN`, hacer el push normal sin sync.
+**Flujo de sync (aplica en ambos casos):**
+
+1. Si `NOTION_TOKEN` no esta configurado: informar al usuario y continuar sin sync
+2. Obtener el link de GitHub del proyecto (de `.git/config` → remote origin URL)
+3. Buscar la pagina del proyecto en Notion **por ese link** (identificador unico)
+4. Si la pagina no existe: crearla con la estructura completa (ver "Estructura de documentacion en Notion")
+5. **Para CADA archivo en `docs/`**: leer el contenido completo y replicarlo en la sub-pagina correspondiente de Notion
+6. Informar: "Docs sincronizados a Notion (pagina: [nombre-proyecto])"
+
+Si es auto-sync en git push: ejecutar el `git push` despues del sync.
+
+### CRITICO: Replicacion completa del contenido
+
+**NUNCA** poner solo un link o referencia al archivo .md de GitHub en Notion. El contenido de cada archivo `docs/*.md` debe **replicarse completamente** como bloques nativos de Notion.
+
+**MAL (nunca hacer esto):**
+```
+Sub-pagina "API Documentation" en Notion:
+  → Link: https://github.com/manzanaverde/mv-proyecto/blob/main/docs/API.md
+```
+
+**BIEN (siempre hacer esto):**
+```
+Sub-pagina "API Documentation" en Notion:
+  → Heading 1: "API Endpoints"
+  → Heading 2: "Base URL"
+  → Paragraph: "Staging: https://api-staging..."
+  → Heading 2: "Endpoints"
+  → Heading 3: "GET /api/v1/meals"
+  → Paragraph: "Auth: Required..."
+  → Code block: "{ success: true, data: [...] }"
+  → (todo el contenido replicado como bloques nativos)
+```
+
+### Como convertir markdown a bloques de Notion
+
+Al hacer push de un archivo `docs/*.md` a Notion, convertir cada elemento markdown a su bloque Notion equivalente:
+
+| Markdown | Bloque Notion |
+|----------|---------------|
+| `# Heading` | `heading_1` |
+| `## Heading` | `heading_2` |
+| `### Heading` | `heading_3` |
+| Parrafo normal | `paragraph` |
+| `- item` | `bulleted_list_item` |
+| `` ```code``` `` | `code` block |
+| `> quote` | `quote` block |
+| `| tabla |` | `table` block (o convertir a texto si la API no soporta tablas directamente) |
+| `---` | `divider` |
+| Texto con **bold**, *italic*, `code` | Rich text con annotations correspondientes |
+
+**Procedimiento para actualizar una sub-pagina:**
+
+1. Obtener el ID de la sub-pagina existente en Notion
+2. Leer los bloques actuales de la sub-pagina (`API-get-block-children`)
+3. **Eliminar todos los bloques hijos existentes** (`API-delete-a-block` para cada uno)
+4. **Crear los nuevos bloques** con el contenido completo del archivo .md (`API-patch-block-children`)
+5. Verificar que el contenido se replico correctamente
+
+**IMPORTANTE:** Reemplazar TODO el contenido de la sub-pagina, no agregar al final. Cada sync es un reemplazo completo.
+
+### Mapeo de archivos a sub-paginas
+
+| Archivo local | Sub-pagina Notion |
+|---------------|-------------------|
+| `docs/PROJECT_SCOPE.md` | "Overview" |
+| `docs/BUSINESS_LOGIC.md` | "Business Logic" |
+| `docs/API.md` | "API Documentation" |
+| `docs/TABLES.md` | "Tables" |
+| `docs/COMPONENTS.md` | "Components" |
+| `docs/ARCHITECTURE.md` | "Architecture" |
+| `docs/CHANGELOG.md` | "Changelog" |
 
 ## Estructura de documentacion en Notion
 

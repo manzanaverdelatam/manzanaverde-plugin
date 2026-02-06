@@ -131,27 +131,49 @@ Cuando el usuario dice "sincroniza los docs", "descarga los docs", o "actualiza 
 
 ### Push: docs/ → Notion (subir)
 
-Cuando el usuario dice "sube los docs a Notion", "sincroniza a Notion", o "push docs":
+La sincronizacion push se ejecuta en **dos situaciones**:
 
-1. Leer los archivos de `docs/`
-2. Buscar la pagina del proyecto en Notion
-3. Actualizar las sub-paginas en Notion con el contenido local
-4. Informar al usuario que secciones se actualizaron
+1. **On demand**: Cuando el usuario dice "sube los docs a Notion", "sincroniza a Notion", "push docs", "sincroniza docs", etc.
+2. **Automatico en git push**: Cada vez que se hace `git push`, sincronizar `docs/` a Notion antes del push
 
-### Auto-sync en git push
+**Flujo de push (aplica en ambos casos):**
 
-**IMPORTANTE:** Cada vez que se hace `git push` a GitHub, se debe sincronizar automaticamente `docs/` a Notion. El flujo es:
+1. Leer el contenido completo de cada archivo en `docs/`
+2. Buscar la pagina del proyecto en Notion (por link de GitHub de `.git/config`)
+3. Si la pagina no existe: crearla con la estructura completa
+4. **Replicar el contenido completo** de cada archivo como bloques nativos de Notion en la sub-pagina correspondiente
+5. Informar al usuario que secciones se actualizaron
 
-1. Claude detecta que se va a hacer `git push`
-2. **Antes del push**: verificar si hay cambios en `docs/` (comparar con el ultimo sync)
-3. Si hay cambios y `NOTION_TOKEN` esta configurado:
-   a. Obtener el link de GitHub del proyecto (de `.git/config` → remote origin URL)
-   b. Buscar la pagina del proyecto en Notion **por ese link** (identificador unico)
-   c. Actualizar las sub-paginas correspondientes con el contenido de `docs/`
-4. Hacer el `git push` normalmente
-5. Informar: "Docs sincronizados a Notion (pagina: [nombre-proyecto]) antes del push"
+**CRITICO - Replicacion completa, NO referencias:**
 
-Si `NOTION_TOKEN` no esta configurado, hacer el `git push` normal sin sync e informar que los docs solo se subieron a GitHub.
+**NUNCA** poner solo un link o referencia al archivo .md de GitHub. Cada archivo `docs/*.md` debe replicarse como bloques nativos de Notion:
+- `# Heading` → bloque `heading_1`
+- `## Heading` → bloque `heading_2`
+- `### Heading` → bloque `heading_3`
+- Parrafos → bloque `paragraph`
+- `- item` → bloque `bulleted_list_item`
+- `` ```code``` `` → bloque `code`
+- Tablas → convertir a texto formateado o bloques de tabla
+
+**Procedimiento por sub-pagina:**
+1. Obtener ID de la sub-pagina existente
+2. Eliminar todos los bloques hijos existentes (`API-delete-a-block`)
+3. Crear nuevos bloques con el contenido completo del .md (`API-patch-block-children`)
+4. Cada sync es un **reemplazo completo** del contenido
+
+**Mapeo de archivos a sub-paginas:**
+
+| Archivo local | Sub-pagina Notion |
+|---------------|-------------------|
+| `docs/PROJECT_SCOPE.md` | "Overview" |
+| `docs/BUSINESS_LOGIC.md` | "Business Logic" |
+| `docs/API.md` | "API Documentation" |
+| `docs/TABLES.md` | "Tables" |
+| `docs/COMPONENTS.md` | "Components" |
+| `docs/ARCHITECTURE.md` | "Architecture" |
+| `docs/CHANGELOG.md` | "Changelog" |
+
+Si `NOTION_TOKEN` no esta configurado, informar al usuario y continuar sin sync.
 
 ### Flujo tipico
 
