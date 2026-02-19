@@ -196,13 +196,20 @@ Colors.green                   // Color generico de Material
 fontSize: 16                   // Fuente hardcodeada
 EdgeInsets.all(13)             // Spacing con numero magico
 BorderRadius.circular(8)       // Border radius hardcodeado (sin usar AppBorders)
+Radius.circular(12)            // Radius directo hardcodeado
+SizedBox(height: 16)           // SizedBox con numero magico
 
 // ✅ CORRECTO:
 AppColors.mvGreen500           // Token de color
 AppTypography.bodyMedium       // Token de tipografia
 AppSpacing.lg                  // Token de espaciado (= 16.0)
-AppBorders.input               // Token de border radius
+AppBorders.input               // Token de border radius (= BorderRadius circular 8px)
+SizedBox(height: AppSpacing.lg) // SizedBox con token
 ```
+
+> **Excepcion:** Los archivos de tema (`app_colors.dart`, `app_theme.dart`, `app_shadows.dart`, `app_borders.dart`, `app_typography.dart`, `app_spacing.dart`) pueden usar valores hardcodeados — son justamente donde se definen los tokens. El hook de validacion los excluye automaticamente.
+>
+> **Escape hatch:** Si por algun motivo valido un valor hardcodeado es necesario en otro contexto, agregar `// OK` al final de la linea para suprimir la advertencia. Documentar el motivo en un comentario adjunto.
 
 ### Validacion de arquitectura
 

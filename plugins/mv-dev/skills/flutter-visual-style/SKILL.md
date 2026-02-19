@@ -297,6 +297,8 @@ abstract class AppBorders {
 
 ### 3.6 Sombras estandar
 
+> **Nota:** `app_shadows.dart` es el unico archivo de tema donde se permite usar `Color(0x...)` directamente. Las sombras de Flutter requieren colores con canal alpha para la transparencia, y no existe un token de AppColors para esto. El hook de validacion excluye automaticamente todos los archivos en `core/theme/`.
+
 Crear `lib/core/theme/app_shadows.dart`:
 
 ```dart
