@@ -316,3 +316,4 @@ Guia completa: ver SETUP.md del plugin (seccion 1)
 | `/mv-dev:mv-design-system` | Referencia del design system de MV |
 | `/mv-dev:mv-testing` | Guia para escribir tests en el stack de MV |
 | `/mv-dev:mv-deployment` | Procedimientos de deployment |
+| `/mv-dev:notion-gherkin` | **Obtener requerimientos de Notion y generar archivos Gherkin (.feature) listos para BDD** |
